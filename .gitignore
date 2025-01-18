@@ -1,6 +1,30 @@
-﻿.vs/
-bin/
-obj/
+﻿# Visual Studio
+.vs/
 *.user
 *.suo
-*.log
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework
+*.jfm
+
+# SQL Server
+*.mdf
+*.ldf
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
