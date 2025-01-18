@@ -4,9 +4,9 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Подключение SQLite
+// Подключение SqlServer
 builder.Services.AddDbContext<TodoContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Добавляем поддержку контроллеров с NewtonsoftJson
 builder.Services.AddControllers().AddNewtonsoftJson();
