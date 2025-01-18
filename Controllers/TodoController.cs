@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
 using TodoApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TodoApi.Controllers
 {
@@ -53,6 +54,10 @@ namespace TodoApi.Controllers
         /// </summary>
         /// <param name="id">Идентификатор задачи.</param>
         /// <returns>Задача с указанным идентификатором.</returns>
+        /// <remarks>
+        /// Требует авторизации JWT.
+        /// </remarks>
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
         {
@@ -87,6 +92,10 @@ namespace TodoApi.Controllers
         /// <param name="id">Идентификатор задачи для обновления.</param>
         /// <param name="todoItem">Обновлённые данные задачи.</param>
         /// <returns>Результат обновления (NoContent, BadRequest или NotFound).</returns>
+        /// <remarks>
+        /// Требует авторизации JWT.
+        /// </remarks>
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTodoItem(int id, TodoItem todoItem)
         {
@@ -119,6 +128,10 @@ namespace TodoApi.Controllers
         /// </summary>
         /// <param name="id">Идентификатор задачи для удаления.</param>
         /// <returns>Результат удаления (NoContent или NotFound).</returns>
+        /// <remarks>
+        /// Требует авторизации JWT.
+        /// </remarks>
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTodoItem(int id)
         {
@@ -144,6 +157,10 @@ namespace TodoApi.Controllers
         /// <param name="id">Идентификатор задачи.</param>
         /// <param name="patchDoc">Документ для частичного обновления задачи.</param>
         /// <returns>Результат обновления (NoContent, BadRequest или NotFound).</returns>
+        /// <remarks>
+        /// Требует авторизации JWT.
+        /// </remarks>
+        [Authorize]
         [HttpPatch("{id}")]
         public async Task<IActionResult> PatchTodoItem(int id, [FromBody] JsonPatchDocument<TodoItem> patchDoc)
         {
