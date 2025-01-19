@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 
 using TodoApi.Models;
 using TodoApi.Services;
@@ -10,7 +11,9 @@ namespace TodoApi.Controllers
     /// Обрабатывает запросы на вход и генерацию JWT-токенов.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiExplorerSettings(GroupName = "v1")]
     public class AuthController : ControllerBase
     {
         private readonly JwtTokenService _tokenService;
@@ -33,6 +36,7 @@ namespace TodoApi.Controllers
         /// Статус 401, если имя пользователя или пароль неверны.
         /// </returns>
         [HttpPost("login")]
+        [MapToApiVersion("1.0")]
         public IActionResult Login([FromBody] LoginModel model)
         {
             // Проверка пользователя.

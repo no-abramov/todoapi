@@ -1,17 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+
 using TodoApi.Data;
 using TodoApi.Models;
-using Microsoft.AspNetCore.Authorization;
+using Asp.Versioning;
 
 namespace TodoApi.Controllers
 {
     /// <summary>
-    /// Контроллер для работы с задачами (Todo).
+    /// Контроллер для работы с задачами (Todo v1).
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion(1)]
+    [ApiExplorerSettings(GroupName = "v1")]
     public class TodoController : ControllerBase
     {
         #region Fields
@@ -26,7 +30,7 @@ namespace TodoApi.Controllers
         #region Context
 
         /// <summary>
-        /// Инициализирует новый экземпляр контроллера <see cref="TodoController"/>.
+        /// Инициализирует новый экземпляр контроллера v1 <see cref="TodoController"/>.
         /// </summary>
         /// <param name="context">Контекст базы данных для задач.</param>
         public TodoController(TodoContext context)
@@ -43,6 +47,7 @@ namespace TodoApi.Controllers
         /// </summary>
         /// <returns>Список задач.</returns>
         [HttpGet]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
         {
@@ -59,6 +64,7 @@ namespace TodoApi.Controllers
         /// </remarks>
         [Authorize]
         [HttpGet("{id}")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<TodoItem>> GetTodoItem(int id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
@@ -77,6 +83,7 @@ namespace TodoApi.Controllers
         /// <param name="todoItem">Объект задачи для создания.</param>
         /// <returns>Созданная задача с её идентификатором.</returns>
         [HttpPost]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<TodoItem>> CreateTodoItem(TodoItem todoItem)
         {
             todoItem.CreatedDate = DateTime.UtcNow; // Устанавливаем дату создания
@@ -97,6 +104,7 @@ namespace TodoApi.Controllers
         /// </remarks>
         [Authorize]
         [HttpPut("{id}")]
+        [MapToApiVersion("1.0")]
         public async Task<IActionResult> UpdateTodoItem(int id, TodoItem todoItem)
         {
             if (id != todoItem.Id)
@@ -133,6 +141,7 @@ namespace TodoApi.Controllers
         /// </remarks>
         [Authorize]
         [HttpDelete("{id}")]
+        [MapToApiVersion("1.0")]
         public async Task<IActionResult> DeleteTodoItem(int id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
@@ -162,6 +171,7 @@ namespace TodoApi.Controllers
         /// </remarks>
         [Authorize]
         [HttpPatch("{id}")]
+        [MapToApiVersion("1.0")]
         public async Task<IActionResult> PatchTodoItem(int id, [FromBody] JsonPatchDocument<TodoItem> patchDoc)
         {
             if (patchDoc == null)
@@ -209,6 +219,7 @@ namespace TodoApi.Controllers
         /// <param name="pageSize">Количество записей на одной странице.</param>
         /// <returns>Объект с метаданными пагинации и списком задач.</returns>
         [HttpGet("paged")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<IEnumerable<TodoItem>>> GetPagedTodoItems(int page = 1, int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)

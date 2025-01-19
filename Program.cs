@@ -1,5 +1,5 @@
-using System.Reflection;
 using System.Text;
+using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,21 +7,24 @@ using Microsoft.IdentityModel.Tokens;
 
 using TodoApi.Data;
 using TodoApi.Services;
-
+using Swashbuckle.AspNetCore.SwaggerGen;
+ 
 var builder = WebApplication.CreateBuilder(args);
 
-// Подключение SqlServer
+// РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє SQL Server
 builder.Services.AddDbContext<TodoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Настройка JWT
+// РќР°СЃС‚СЂРѕР№РєР° JWT
 var jwtConfig = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtConfig["Key"]);
 
-builder.Services.AddAuthentication(options => {
+builder.Services.AddAuthentication(options =>
+{
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options => {
+}).AddJwtBearer(options =>
+{
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
@@ -36,35 +39,55 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-// Регистрация сервиса JwtTokenService (Singleton)
+// Р РµРіРёСЃС‚СЂР°С†РёСЏ JwtTokenService
 builder.Services.AddSingleton<JwtTokenService>();
 
-// Добавляем поддержку контроллеров с NewtonsoftJson
+// Р”РѕР±Р°РІР»СЏРµРј РїРѕРґРґРµСЂР¶РєСѓ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ СЃ NewtonsoftJson
 builder.Services.AddControllers().AddNewtonsoftJson();
 
-// Добавляем Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+// РќР°СЃС‚СЂРѕР№РєР° API-РІРµСЂСЃРёРѕРЅРёСЂРѕРІР°РЅРёСЏ
+builder.Services.AddApiVersioning(options =>
 {
-    // Добавляем поддержку XML-комментариев, если включены
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+}).AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
 });
 
-// Добавляем логи
-builder.Services.AddLogging();
+// Р”РѕР±Р°РІР»СЏРµРј Swagger
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
-// Добавляем чтение секретов
-builder.Configuration.AddUserSecrets<Program>();
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Todo API v1",
+        Version = "v1",
+        Description = "API РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Р·Р°РґР°С‡Р°РјРё (РІРµСЂСЃРёСЏ 1.0)"
+    });
 
-// Генерация и настройка приложения
+    c.SwaggerDoc("v2", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Todo API v2",
+        Version = "v2",
+        Description = "API РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Р·Р°РґР°С‡Р°РјРё (РІРµСЂСЃРёСЏ 2.0)"
+    });
+
+    c.TagActionsBy(api => new[] { api.GroupName ?? "default" });
+});
+
+// Р“РµРЅРµСЂР°С†РёСЏ Рё РЅР°СЃС‚СЂРѕР№РєР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 var app = builder.Build();
 
-// Включение аутентификации и авторизации
-app.UseAuthentication(); 
+// Р’РєР»СЋС‡РµРЅРёРµ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё Рё Р°РІС‚РѕСЂРёР·Р°С†РёРё
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Инициализация базы данных
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р±Р°Р·С‹ РґР°РЅРЅС‹С…
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -74,23 +97,24 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Ошибка инициализации базы данных: {ex.Message}");
+        Console.WriteLine($"РћС€РёР±РєР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё Р±Р°Р·С‹ РґР°РЅРЅС‹С…: {ex.Message}");
         throw;
     }
 }
 
-// Swagger только в режиме разработки
-if (app.Environment.IsDevelopment())
+// РќР°СЃС‚СЂРѕР№РєР° Swagger
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Todo API V1");
+    options.SwaggerEndpoint("/swagger/v2/swagger.json", "Todo API V2");
+});
 
-// Logging Middleware
+// Middleware
 app.UseMiddleware<RequestLoggingMiddleware>();
 
-// Настройка маршрутов
+// РќР°СЃС‚СЂРѕР№РєР° РјР°СЂС€СЂСѓС‚РѕРІ
 app.MapControllers();
 
-// Запуск приложения
+// Р—Р°РїСѓСЃРє РїСЂРёР»РѕР¶РµРЅРёСЏ
 app.Run();

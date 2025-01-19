@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TodoApi.Data;
 using TodoApi.Models;
@@ -9,7 +10,9 @@ namespace TodoApi.Controllers
     /// Контроллер для работы с логами запросов к API.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiExplorerSettings(GroupName = "v1")]
     public class RequestLogsController : ControllerBase
     {
         #region Fields
@@ -39,6 +42,7 @@ namespace TodoApi.Controllers
         /// <returns>Список объектов <see cref="RequestLog"/>.</returns>
         // GET: api/requestlogs
         [HttpGet]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<IEnumerable<RequestLog>>> GetRequestLogs()
         {
             return await _context.RequestLogs.ToListAsync();
@@ -51,6 +55,7 @@ namespace TodoApi.Controllers
         /// <returns>Объект <see cref="RequestLog"/>, если найден; иначе статус 404 (NotFound).</returns>
         // GET: api/requestlogs/{id}
         [HttpGet("{id}")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<RequestLog>> GetRequestLog(int id)
         {
             var requestLog = await _context.RequestLogs.FindAsync(id);
@@ -81,6 +86,7 @@ namespace TodoApi.Controllers
         /// - `Logs` — список логов на текущей странице.
         /// </remarks>
         [HttpGet("paged")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<IEnumerable<RequestLog>>> GetPagedRequestLogs(int page = 1, int pageSize = 10)
         {
             if (page < 1 || pageSize < 1)
